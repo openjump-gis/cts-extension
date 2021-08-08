@@ -4,7 +4,7 @@
 
     <groupId>org.openjump</groupId>
     <artifactId>cts-extension</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -18,9 +18,7 @@
         <dependency>
             <groupId>org.openjump</groupId>
             <artifactId>OpenJUMP</artifactId>
-            <version>2.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/OpenJUMP-20210412-b68329e.jar</systemPath>
+            <version>2.0-main-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.locationtech.jts</groupId>

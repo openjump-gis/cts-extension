@@ -6,7 +6,6 @@ import com.vividsolutions.jump.coordsys.CoordinateSystem;
 import com.vividsolutions.jump.feature.Feature;
 import com.vividsolutions.jump.task.TaskMonitor;
 import com.vividsolutions.jump.workbench.Logger;
-import com.vividsolutions.jump.workbench.WorkbenchContext;
 import com.vividsolutions.jump.workbench.model.Layer;
 import com.vividsolutions.jump.workbench.model.Layerable;
 import com.vividsolutions.jump.workbench.model.UndoableCommand;
@@ -16,7 +15,6 @@ import com.vividsolutions.jump.workbench.ui.HTMLFrame;
 import com.vividsolutions.jump.workbench.ui.MenuNames;
 import com.vividsolutions.jump.workbench.ui.MultiInputDialog;
 import com.vividsolutions.jump.workbench.ui.SuggestTreeComboBox;
-import com.vividsolutions.jump.workbench.ui.plugin.FeatureInstaller;
 import org.cts.CRSFactory;
 import org.cts.Identifier;
 import org.cts.crs.CRSException;
@@ -41,28 +39,28 @@ import java.util.List;
  */
 public class CTSPlugIn extends ThreadedBasePlugIn implements Iconified, EnableChecked {
 
-    I18N I18N_ = I18N.getInstance("cts_plugin");
+    private final I18N i18n = I18N.getInstance("cts_plugin");
 
-    private final String REGISTRY           = I18N_.getText("cts_plugin","CTSPlugIn.registry");
+    private final String REGISTRY           = i18n.get("CTSPlugIn.registry");
     private final String SOURCE             = "source";
-    private final String SOURCE_LABEL       = I18N_.getText("cts_plugin","CTSPlugIn.srcCRS");
+    private final String SOURCE_LABEL       = i18n.get("CTSPlugIn.srcCRS");
     private final String TARGET             = "target";
-    private final String TARGET_LABEL       = I18N_.getText("cts_plugin","CTSPlugIn.tgtCRS");
-    private final String OP_NOT_FOUND       = I18N_.getText("cts_plugin","CTSPlugIn.op-not-found");
-    private final String HETEROGEN_SRC      = I18N_.getText("cts_plugin","CTSPlugIn.heterogeneous-sources");
-    private final String TRANSFORM          = I18N_.getText("cts_plugin","CTSPlugIn.transform");
-    private final String REPLACE            = I18N_.getText("cts_plugin","CTSPlugIn.replace");
-    private final String SOURCE_DATUM       = I18N_.getText("cts_plugin","CTSPlugIn.srcDatum");
-    private final String TARGET_DATUM       = I18N_.getText("cts_plugin","CTSPlugIn.tgtDatum");
-    private final String SOURCE_SPHEROID    = I18N_.getText("cts_plugin","CTSPlugIn.srcSpheroid");
-    private final String TARGET_SPHEROID    = I18N_.getText("cts_plugin","CTSPlugIn.tgtSpheroid");
-    private final String SOURCE_TOWGS84     = I18N_.getText("cts_plugin","CTSPlugIn.srcToWgs84");
-    private final String TARGET_TOWGS84     = I18N_.getText("cts_plugin","CTSPlugIn.tgtToWgs84");
-    private final String TRANSFORMED_LAYERS = I18N_.getText("cts_plugin","CTSPlugIn.transformed-layers");
-    private final String INVALID_SRC_CRS    = I18N_.getText("cts_plugin","CTSPlugIn.invalid-src-crs");
-    private final String INVALID_TGT_CRS    = I18N_.getText("cts_plugin","CTSPlugIn.invalid-tgt-crs");
-    private final String SOURCE_PROJECTION  = I18N_.getText("cts_plugin","CTSPlugIn.srcProjection");
-    private final String TARGET_PROJECTION  = I18N_.getText("cts_plugin","CTSPlugIn.tgtProjection");
+    private final String TARGET_LABEL       = i18n.get("CTSPlugIn.tgtCRS");
+    private final String OP_NOT_FOUND       = i18n.get("CTSPlugIn.op-not-found");
+    private final String HETEROGEN_SRC      = i18n.get("CTSPlugIn.heterogeneous-sources");
+    private final String TRANSFORM          = i18n.get("CTSPlugIn.transform");
+    private final String REPLACE            = i18n.get("CTSPlugIn.replace");
+    private final String SOURCE_DATUM       = i18n.get("CTSPlugIn.srcDatum");
+    private final String TARGET_DATUM       = i18n.get("CTSPlugIn.tgtDatum");
+    private final String SOURCE_SPHEROID    = i18n.get("CTSPlugIn.srcSpheroid");
+    private final String TARGET_SPHEROID    = i18n.get("CTSPlugIn.tgtSpheroid");
+    private final String SOURCE_TOWGS84     = i18n.get("CTSPlugIn.srcToWgs84");
+    private final String TARGET_TOWGS84     = i18n.get("CTSPlugIn.tgtToWgs84");
+    private final String TRANSFORMED_LAYERS = i18n.get("CTSPlugIn.transformed-layers");
+    private final String INVALID_SRC_CRS    = i18n.get("CTSPlugIn.invalid-src-crs");
+    private final String INVALID_TGT_CRS    = i18n.get("CTSPlugIn.invalid-tgt-crs");
+    private final String SOURCE_PROJECTION  = i18n.get("CTSPlugIn.srcProjection");
+    private final String TARGET_PROJECTION  = i18n.get("CTSPlugIn.tgtProjection");
 
     private static final String EPSG = "EPSG";
     private static final String IGNF = "IGNF";
@@ -74,15 +72,15 @@ public class CTSPlugIn extends ThreadedBasePlugIn implements Iconified, EnableCh
 
     public void initialize(PlugInContext context) {
 
-        WorkbenchContext workbenchContext = context.getWorkbenchContext();
-        FeatureInstaller featureInstaller = new FeatureInstaller(workbenchContext);
-
-        featureInstaller.addMainMenuPlugin(this, new String[]{MenuNames.PLUGINS});
+        context.getFeatureInstaller().addMainMenuPlugin(
+            this, new String[]{MenuNames.PLUGINS}, getName(),
+            false, getIcon(), getEnableCheck(context)
+        );
 
     }
 
     public String getName() {
-        return I18N_.getText("cts_plugin","CTSPlugIn");
+        return i18n.get("CTSPlugIn");
     }
 
     public ImageIcon getIcon(){
@@ -347,16 +345,17 @@ public class CTSPlugIn extends ThreadedBasePlugIn implements Iconified, EnableCh
         return RegistryReader.read(registry);
     }
 
-    EnableCheck createEnableCheck(final WorkbenchContext context) {
+    EnableCheck getEnableCheck(final PlugInContext context) {
+        EnableCheckFactory factory = context.getCheckFactory();
         return new MultiEnableCheck()
-                .add(EnableCheckFactory.getInstance().createTaskWindowMustBeActiveCheck())
-                .add(EnableCheckFactory.getInstance().createAtLeastNLayersMustBeSelectedCheck(1))
-                .add(EnableCheckFactory.getInstance().createSelectedLayersMustBeEditableCheck())
-                .add(EnableCheckFactory.getInstance().createSelectedLayerablesMustBeVectorLayers())
+                .add(factory.createTaskWindowMustBeActiveCheck())
+                .add(factory.createAtLeastNLayersMustBeSelectedCheck(1))
+                .add(factory.createSelectedLayersMustBeEditableCheck())
+                .add(factory.createSelectedLayerablesMustBeVectorLayers())
                 .add(new EnableCheck() {
                     @Override
                     public String check(JComponent component) {
-                        Layerable[] layerables = (Layerable[]) context.getLayerableNamePanel()
+                        Layerable[] layerables = context.getLayerableNamePanel()
                                 .selectedNodes(Layerable.class).toArray(new Layerable[0]);
                         if (layerables.length > 0) {
                             Layer layer = (Layer) layerables[0];
