@@ -4,7 +4,7 @@
 
     <groupId>org.openjump</groupId>
     <artifactId>cts-extension</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -13,6 +13,14 @@
         <version.number>0.0.0</version.number>
         <jts.version>1.18.1</jts.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>ojrepo</id>
+            <name>OpenJUMP Snapshot Repository</name>
+            <url>https://ojrepo.soldin.de/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
